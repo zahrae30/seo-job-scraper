@@ -437,9 +437,13 @@ def _should_run_p3() -> bool:
 def search_jsearch(query: str) -> list:
     if not RAPIDAPI_KEY:
         return []
-    url = "https://jsearch.p.rapidapi.com/search"
+    url = "https://jsearch.p.rapidapi.com/search-v2"
     headers = {"x-rapidapi-key": RAPIDAPI_KEY, "x-rapidapi-host": "jsearch.p.rapidapi.com"}
-    params = {"query": query, "num_pages": "1", "date_posted": "week", "work_from_home": "true"}
+    params = {
+    "query": query,
+    "date_posted": "week",
+    "work_from_home": "true",
+}
 
     for attempt in range(1, 4):
         try:

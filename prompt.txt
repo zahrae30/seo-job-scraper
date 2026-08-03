@@ -1,6 +1,7 @@
-Write a professional, concise cover letter for the '{title}' position at '{company}'.
-Focus on my technical SEO skills and experience.
+Write a concise, natural, and personalized cover letter for the '{title}' position at '{company}'.
+
+Use only the following real background: Zahra Esfandiari has more than three years of experience in digital marketing, content management, social media, content strategy, market and competitor research, and cross-functional coordination. She has managed content teams and has collected, edited, categorized, tagged, and standardized information for more than 31,000 e-commerce products. She holds a Master's degree in Artificial Intelligence and is familiar with AI-assisted content creation, prompt writing, Microsoft Office, Google Workspace, Photoshop, and Illustrator.
+
+Emphasize the most relevant transferable experience for the job. Do not invent skills, achievements, or direct industry experience. Keep it professional, human, specific to the role, and under 180 words.
 
 Job link: {url}
-
-Keep it under 250 words, be targeted to the job requirements, and end with a call to action.

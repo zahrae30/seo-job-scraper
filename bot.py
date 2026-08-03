@@ -437,38 +437,55 @@ def _should_run_p3() -> bool:
 def search_jsearch(query: str) -> list:
     if not RAPIDAPI_KEY:
         return []
+
     url = "https://jsearch.p.rapidapi.com/search-v2"
-    headers = {"x-rapidapi-key": RAPIDAPI_KEY, "x-rapidapi-host": "jsearch.p.rapidapi.com"}
+
+    headers = {
+        "x-rapidapi-key": RAPIDAPI_KEY,
+        "x-rapidapi-host": "jsearch.p.rapidapi.com",
+    }
+
     params = {
-    "query": query,
-    "date_posted": "week",
-    "work_from_home": "true",
-}
+        "query": query,
+        "date_posted": "week",
+        "work_from_home": "true",
+    }
 
-    for attempt in range(1, 4):
-        try:
-            resp = requests.get(url, headers=headers, params=params, timeout=20)
-            if resp.status_code == 429:
-                log.warning("JSearch rate limit — waiting 60s")
-                time.sleep(60)
-                continue
-            if resp.status_code == 403:
-                log.error("JSearch 403")
-                return []
-            resp.raise_for_status()
-            data = resp.json()
-            if data.get("status") != "OK":
-                return []
-            return [_normalize_jsearch(j) for j in data.get("data", [])]
-        except requests.exceptions.Timeout:
-            log.warning(f"JSearch timeout {attempt}/3")
-        except Exception as e:
-            log.error(f"JSearch error: {e}")
+    try:
+        resp = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            timeout=30,
+        )
+
+        if resp.status_code == 429:
+            log.warning("JSearch rate limit reached")
             return []
-        if attempt < 3:
-            time.sleep(5 * attempt)
-    return []
 
+        if resp.status_code in (401, 403):
+            log.error(f"JSearch authorization error: {resp.status_code}")
+            return []
+
+        resp.raise_for_status()
+
+        data = resp.json()
+
+        if data.get("status") != "OK":
+            log.warning(f"JSearch unexpected response: {data}")
+            return []
+
+        jobs = [_normalize_jsearch(j) for j in data.get("data", [])]
+        log.info(f"JSearch -> {len(jobs)} jobs for: {query}")
+        return jobs
+
+    except requests.exceptions.Timeout:
+        log.warning(f"JSearch timeout for: {query}")
+        return []
+
+    except Exception as e:
+        log.error(f"JSearch error for '{query}': {e}")
+        return []
 def _normalize_jsearch(j: dict) -> dict:
     salary = j.get("job_salary_string", "")
     if not salary and j.get("job_min_salary"):

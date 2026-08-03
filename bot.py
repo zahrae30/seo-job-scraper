@@ -1,5 +1,5 @@
 """
-SEO Job Scraper Bot v5.0
+Content & Digital Marketing Job Scraper Bot v5.0
 ========================
 منابع رایگان:
   • Remotive.com
@@ -88,16 +88,28 @@ MIN_FIT_SCORE    = 35
 MAX_JOB_AGE_DAYS = 7
 
 JSEARCH_QUERIES = {
-    1: ["Junior SEO remote", "Technical SEO remote", "SEO Python remote"],
-    2: ["SEO Content Editor remote", "WordPress SEO Specialist remote"],
-    3: ["on-page SEO specialist remote", "SEO copywriter remote"],
+    1: [
+        "Content Specialist remote worldwide",
+        "Digital Marketing Specialist remote worldwide",
+        "Social Media Specialist remote worldwide",
+    ],
+    2: [
+        "E-commerce Content Specialist remote worldwide",
+    ],
+    3: [
+        "Content Operations Specialist remote worldwide",
+        "Product Content Specialist remote worldwide",
+    ],
 }
 
 _DEFAULT_SKILLS = [
-    "python", "wordpress", "technical seo", "on-page seo",
-    "screaming frog", "ahrefs", "semrush", "google analytics",
-    "google search console", "content", "keyword research",
-    "html", "cms", "link building", "schema",
+    "digital marketing", "content strategy", "content management",
+    "content operations", "e-commerce content", "ecommerce content",
+    "product content", "product listing", "product descriptions",
+    "content quality control", "social media management",
+    "market research", "competitor analysis", "brand communication",
+    "ai-assisted content", "prompt writing", "cms", "basic seo",
+    "google workspace", "microsoft office", "photoshop", "illustrator",
 ]
 _user_skills_env = os.environ.get("USER_SKILLS", "")
 MY_SKILLS = [s.strip().lower() for s in _user_skills_env.split(",") if s.strip()] if _user_skills_env else _DEFAULT_SKILLS
@@ -105,18 +117,26 @@ MY_SKILLS = [s.strip().lower() for s in _user_skills_env.split(",") if s.strip()
 BLACKLIST_KEYWORDS = [
     "us residents only", "must reside in us", "must be located in us",
     "must be based in the us", "must be based in us",
-    "must be authorized to work in the us",
-    "senior seo", "head of seo", "director of seo", "vp of",
-    "agency", "full stack", "fullstack",
-    "native english speaker only",
+    "must be authorized to work in the us", "us work authorization required",
+    "eu work authorization required", "security clearance required",
+    "native english speaker only", "commission only", "unpaid internship",
+    "cold calling", "door to door", "full stack", "fullstack",
+    "software engineer", "software developer", "data scientist",
+    "senior content", "senior marketing", "head of content",
+    "head of marketing", "director of content", "director of marketing", "vp of",
     "10+ years", "8+ years", "7+ years",
 ]
 
 BOOST_KEYWORDS = {
-    "technical seo": 20, "python": 18, "wordpress": 15,
-    "junior": 18, "entry level": 15, "associate": 12,
-    "seo specialist": 12, "seo editor": 12, "content editor": 10,
-    "on-page": 10, "part-time": 8, "contract": 5,
+    "e-commerce content": 24, "ecommerce content": 24,
+    "content operations": 22, "product content": 22,
+    "product listing": 20, "content specialist": 20,
+    "digital marketing specialist": 18, "social media specialist": 18,
+    "content strategist": 18, "content manager": 15,
+    "content editor": 12, "marketing coordinator": 12,
+    "content quality": 12, "ai-assisted content": 10,
+    "prompt writing": 10, "cms": 8, "mid-level": 10,
+    "specialist": 8, "part-time": 8, "contract": 5,
     "remote-first": 8, "async": 5, "flexible": 4,
 }
 
@@ -142,7 +162,7 @@ def load_prompt_template() -> str:
                     return content
     except Exception as e:
         log.warning(f"Could not load prompt.txt: {e}")
-    return "Write a short, professional cover letter for the '{title}' position at '{company}'. Focus on my technical SEO skills. Job link: {url}"
+    return "Write a concise, natural cover letter for the '{title}' position at '{company}'. Highlight my experience in digital marketing, content management, e-commerce product information, content quality control, cross-functional coordination, and AI-assisted content. Do not invent experience. Job link: {url}"
 
 # ── Seen Jobs Cache ─────────────────────────────────────────────────────────
 
@@ -182,7 +202,13 @@ def calculate_fit_score(job: dict) -> tuple:
             matched_skills.append(skill)
             score += 7
 
-    if re.search(r"\bseo\b", title):
+    target_title_terms = [
+        "content specialist", "content strategist", "content manager",
+        "content editor", "content operations", "product content",
+        "e-commerce content", "ecommerce content", "digital marketing",
+        "social media", "marketing coordinator",
+    ]
+    if any(term in title for term in target_title_terms):
         score += 12
     if job.get("salary"):
         score += 10
@@ -197,9 +223,9 @@ def calculate_fit_score(job: dict) -> tuple:
 
 def fetch_remotive() -> list:
     endpoints = [
-        "https://remotive.com/api/remote-jobs?category=seo&limit=20",
-        "https://remotive.com/api/remote-jobs?search=technical+seo&limit=10",
-        "https://remotive.com/api/remote-jobs?search=seo+content&limit=10",
+        "https://remotive.com/api/remote-jobs?search=content+specialist&limit=20",
+        "https://remotive.com/api/remote-jobs?search=digital+marketing&limit=20",
+        "https://remotive.com/api/remote-jobs?search=social+media&limit=15",
     ]
     results = []
     for url in endpoints:
@@ -228,9 +254,9 @@ def fetch_remotive() -> list:
 
 def fetch_jobicy() -> list:
     endpoints = [
-        "https://jobicy.com/api/v2/remote-jobs?tag=seo&count=20",
-        "https://jobicy.com/api/v2/remote-jobs?tag=content-marketing&count=15",
-        "https://jobicy.com/api/v2/remote-jobs?tag=wordpress&count=10",
+        "https://jobicy.com/api/v2/remote-jobs?tag=content-marketing&count=20",
+        "https://jobicy.com/api/v2/remote-jobs?tag=digital-marketing&count=20",
+        "https://jobicy.com/api/v2/remote-jobs?tag=social-media&count=15",
     ]
     results = []
     for url in endpoints:
@@ -262,7 +288,7 @@ def fetch_jobicy() -> list:
     return results
 
 def fetch_arbeitnow() -> list:
-    SEO_TERMS = ["seo", "search engine optimization", "content editor", "technical seo", "wordpress seo"]
+    TARGET_TERMS = ["content specialist", "content manager", "content strategist", "content operations", "digital marketing", "social media", "marketing coordinator", "e-commerce content", "ecommerce content", "product content", "content editor"]
     try:
         resp = requests.get("https://arbeitnow.com/api/job-board-api", timeout=15, headers={"User-Agent": "Mozilla/5.0"})
         resp.raise_for_status()
@@ -272,7 +298,7 @@ def fetch_arbeitnow() -> list:
                 continue
             title = (j.get("title") or "").lower()
             desc  = (j.get("description") or "").lower()[:300]
-            if not any(t in title or t in desc for t in SEO_TERMS):
+            if not any(t in title or t in desc for t in TARGET_TERMS):
                 continue
             results.append({
                 "id":           f"arbeitnow_{j.get('slug', '')}",
@@ -297,7 +323,7 @@ def fetch_adzuna() -> list:
     if not ADZUNA_APP_ID or not ADZUNA_API_KEY:
         return []
     results = []
-    for q in ["seo", "technical seo", "seo specialist"]:
+    for q in ["content specialist", "digital marketing specialist", "social media specialist"]:
         try:
             resp = requests.get(
                 f"https://api.adzuna.com/v1/api/jobs/us/search/1",
@@ -328,12 +354,12 @@ def fetch_adzuna() -> list:
     return results
 
 def fetch_findwork() -> list:
-    SEO_TERMS = ["seo", "search engine", "content editor", "wordpress", "technical seo", "organic", "keyword"]
+    TARGET_TERMS = ["content specialist", "content manager", "content strategist", "content operations", "digital marketing", "social media", "marketing coordinator", "product content", "content editor"]
     try:
         resp = requests.get(
             "https://findwork.dev/api/jobs/",
-            params={"search": "seo", "remote": "true", "order_by": "-date_posted"},
-            headers={"User-Agent": "Mozilla/5.0 (compatible; SEOJobBot/5.0)"},
+            params={"search": "content marketing", "remote": "true", "order_by": "-date_posted"},
+            headers={"User-Agent": "Mozilla/5.0 (compatible; ContentMarketingJobBot/5.0)"},
             timeout=15,
         )
         if resp.status_code == 403:
@@ -344,7 +370,7 @@ def fetch_findwork() -> list:
         for j in resp.json().get("results", []):
             title = (j.get("role") or "").lower()
             desc  = (j.get("text") or "").lower()[:500]
-            if not any(t in title or t in desc for t in SEO_TERMS):
+            if not any(t in title or t in desc for t in TARGET_TERMS):
                 continue
             results.append({
                 "id":           f"findwork_{j.get('id', '')}",
@@ -372,7 +398,7 @@ def fetch_cloudflare_worker() -> list:
     if not worker_url.endswith("/jobs"):
         worker_url += "/jobs"
     try:
-        resp = requests.get(worker_url, headers={"User-Agent": "SEOJobBot/5.0"}, timeout=20)
+        resp = requests.get(worker_url, headers={"User-Agent": "ContentMarketingJobBot/5.0"}, timeout=20)
         if resp.status_code in (401, 404):
             log.error(f"CF Worker: {resp.status_code}")
             return []
@@ -612,7 +638,7 @@ def batch_append_to_sheet(client, rows: list) -> None:
 
 def main() -> None:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    log.info(f"=== SEO Job Scraper v5.0 started at {now} ===")
+    log.info(f"=== Content & Digital Marketing Job Scraper v5.0 started at {now} ===")
 
     seen_jobs = load_seen_jobs()
     sheets = get_sheets_client()
@@ -723,7 +749,7 @@ def main() -> None:
         return
 
     send_telegram(
-        f"🤖 <b>New SEO Jobs</b>\n"
+        f"🤖 <b>New Content & Digital Marketing Jobs</b>\n"
         f"📅 {now}\n\n"
         f"✅ <b>{len(qualified)}</b> jobs (sorted by fit)\n"
         f"⛔ {stats['blacklisted']} filtered | "
